@@ -285,12 +285,22 @@ app.use('/images', express.static(path.join(__dirname, 'upload/images'))); // wh
 app.post("/upload",upload.single('product'),(req,res)=>{    //we creted "/upload to upload any images to the end point "
     res.json({
         success:1,
-        image_url:`http://localhost:${port}/images/${req.file.filename}` // usiing image url we can accces to thr image 
+        image_url:`https://localhost:${PORT}/images/${req.file.filename}` // usiing image url we can accces to thr image 
 
     })
 })
 
 
+// Example verification endpoint
+app.get('/verifyimages', async (req, res) => {
+    try {
+        const products = await Product.find({});
+        console.log(products);
+        res.json(products);
+    } catch (error) {
+        res.status(500).send('Error fetching products');
+    }
+});
 //schema for creating productss:
 
 const Product = mongoose.model("Product",{
