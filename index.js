@@ -285,7 +285,7 @@ app.use('/images', express.static(path.join(__dirname, 'upload/images'))); // wh
 app.post("/upload",upload.single('product'),(req,res)=>{    //we creted "/upload to upload any images to the end point "
     res.json({
         success:1,
-        image_url:`https://localhost:${PORT}/images/${req.file.filename}` // usiing image url we can accces to thr image 
+        image_url:`https://krushibajarbackend.onrender.com/images/${req.file.filename}` // usiing image url we can accces to thr image 
 
     })
 })
