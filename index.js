@@ -19,6 +19,12 @@ app.use(express.json());  // with the help of this whatever request that we get 
 
 app.use(cors()); // using this our react js project connect to exprees app on 4000 port 
 
+app.use(cors({
+    origin: 'https://krushibajar.netlify.app', // your frontend domain
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }))
+
 // database connection with mongodb :
 // connection string for database connection with mongodb: mongodb+srv://vedantjayle2003:<password>@ecommercecluster.iblb4f6.mongodb.net/
 mongoose.connect("mongodb+srv://vedantjayle2003:ecommerce@cluster0.p6m6ytc.mongodb.net/e-commerce");
@@ -401,5 +407,9 @@ app.post('/addproduct',async(req,res)=> {
         name:req.body.name,
     })
 })
+
+
+
+
 
 
