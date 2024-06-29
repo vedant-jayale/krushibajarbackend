@@ -19,11 +19,22 @@ app.use(express.json());  // with the help of this whatever request that we get 
 
 app.use(cors()); // using this our react js project connect to exprees app on 4000 port 
 
-app.use(cors({
-    origin: 'https://krushibajar.netlify.app', // your frontend domain
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }))
+// Allow requests from Netlify domain
+const allowedOrigins = [
+    'https://krushibajar.netlify.app',
+    'http://localhost:5173'
+    // Add other Netlify domains if necessary
+  ];
+  
+  app.use(cors({
+    origin: function(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  }));
 
 // database connection with mongodb :
 // connection string for database connection with mongodb: mongodb+srv://vedantjayle2003:<password>@ecommercecluster.iblb4f6.mongodb.net/
