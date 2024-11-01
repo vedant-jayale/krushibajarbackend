@@ -725,6 +725,38 @@ app.delete('/delete-order/:id', fetchUser, async (req, res) => {
   }
 });
 
+
+const screenshotStorage = multer.diskStorage({
+    destination: './upload/screenshots',
+    filename: (req, file, cb) => {
+        cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
+    }
+  });
+  
+  const uploadScreenshot = multer({ storage: screenshotStorage });
+  
+  app.use('/screenshots', express.static(path.join(__dirname, 'upload/screenshots')));
+  
+  app.post('/upload-screenshot', uploadScreenshot.single('screenshot'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: 0, message: 'No file uploaded' });
+    }
+  
+    res.json({
+        success: 1,
+        screenshot_url: `https://krushibajarbackend.onrender.com/screenshots/${req.file.filename}` // URL to access the screenshot
+    });
+  });
+  
+  
+  
+  
+
+
+
+
+
+
   
   
 
