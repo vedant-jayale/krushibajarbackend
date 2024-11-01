@@ -248,21 +248,33 @@ const Users=mongoose.model('Users',{
   })
 
   // creating endpoint for removefromcart :
- app.post("/removefromcart",fetchUser,async(req,res)=>{
-    console.log("removed ",req.body.itemId);
-    let userData= await Users.findOne({_id:req.user.id});
-
-    if (userData.cartData[req.body.itemId]>0)
-
-    userData.cartData[req.body.itemId]-=1;
-    await Users.findByIdAndUpdate({_id:req.user.id}, {cartData:userData.cartData})
-
-    res.send("Removed")
-
-  
-    console.log(req.body,req.user);
+app.post("/removefromcart", fetchUser, async (req, res) => {
+  try {
+    console.log("Removing item with ID:", req.body.itemId);
     
-  })
+    let userData = await Users.findOne({ _id: req.user.id });
+
+    // Check if the item exists in the cart and decrement quantity
+    if (userData.cartData[req.body.itemId] > 0) {
+      userData.cartData[req.body.itemId] -= 1;
+      
+      // Update the cart data in the database
+      await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+
+      // Send a JSON response
+      return res.json({ success: true, message: "Item removed from cart" });
+    } else {
+      // Send a response indicating the item was not found or already removed
+      return res.json({ success: false, message: "Item not found in cart or already at zero" });
+    }
+
+    console.log(req.body, req.user);
+  } catch (error) {
+    console.error("Error removing from cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
    // creating endpoint to get cartdata :
 
