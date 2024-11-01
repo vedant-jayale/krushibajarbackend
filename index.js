@@ -22,7 +22,8 @@ app.use(cors()); // using this our react js project connect to exprees app on 40
 // Allow requests from Netlify domain
 const allowedOrigins = [
     'https://krushibajar.netlify.app',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:3000',
     // Add other Netlify domains if necessary
   ];
   
@@ -391,6 +392,7 @@ app.post('/addproduct',async(req,res)=> {
         //if database hass no product
         id=1;
     }
+    
 
 
     const product =new Product({
@@ -418,6 +420,28 @@ app.post('/addproduct',async(req,res)=> {
         name:req.body.name,
     })
 })
+
+// Remove product route
+app.post("/removeproduct", async (req, res) => {
+    const productId = req.body.id;
+    console.log("Removing product with ID:", productId);
+    try {
+        const deletedProduct = await Product.findOneAndDelete({ id: productId });
+        if (deletedProduct) {
+            console.log("Item removed successfully");
+            res.json({
+                success: true,
+                name: deletedProduct.name
+            });
+        } else {
+            console.log("Product not found");
+            res.status(404).json({ success: false, error: "Product not found" });
+        }
+    } catch (error) {
+        console.error("Error removing product:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 
 // order-schema
