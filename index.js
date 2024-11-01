@@ -234,18 +234,26 @@ const Users=mongoose.model('Users',{
   }
 
   // creating endpoint for addtocart :
- app.post("/addtocart",fetchUser,async(req,res)=>{
-    console.log("added ",req.body.itemId);
-    let userData= await Users.findOne({_id:req.user.id});
-    userData.cartData[req.body.itemId]+=1;
-    await Users.findByIdAndUpdate({_id:req.user.id}, {cartData:userData.cartData})
+app.post("/addtocart", fetchUser, async (req, res) => {
+    try {
+        console.log("added ", req.body.itemId);
+        let userData = await Users.findOne({ _id: req.user.id });
 
-    res.send("Added")
+        if (!userData.cartData[req.body.itemId]) {
+            userData.cartData[req.body.itemId] = 0;
+        }
 
-  
-    console.log(req.body,req.user);
-    
-  })
+        userData.cartData[req.body.itemId] += 1;
+        await Users.findByIdAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+
+        res.json({ success: true, message: "Added to cart", cartData: userData.cartData });
+        console.log(req.body, req.user);
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        res.status(500).json({ success: false, message: "Failed to add to cart" });
+    }
+});
+
 
   // creating endpoint for removefromcart :
 app.post("/removefromcart", fetchUser, async (req, res) => {
