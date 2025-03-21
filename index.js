@@ -564,7 +564,6 @@ app.post('/checkout', fetchUser, async (req, res) => {
     const order_id = uuidv4();
 
     if (paymentMethod === 'Online') {
-      // Verify Razorpay payment before placing the order
       const body = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto.createHmac("sha256", razorpay.key_secret)
         .update(body)
@@ -575,7 +574,6 @@ app.post('/checkout', fetchUser, async (req, res) => {
       }
     }
 
-    // Create the order in DB
     const newOrder = new Order({
       user_id,
       order_id,
@@ -599,7 +597,6 @@ app.post('/checkout', fetchUser, async (req, res) => {
     res.status(500).json({ message: 'Error placing order', error: error.message });
   }
 });
-
 
 // 🟢 Route: Get logged-in user's orders
 app.get('/myorders', fetchUser, async (req, res) => {
