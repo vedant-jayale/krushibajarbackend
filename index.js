@@ -586,8 +586,8 @@ app.post('/checkout', fetchUser, async (req, res) => {
         const orders = await Order.find({ user_id: req.user.id }); // Ensure `user_id` is the correct field
         
         if (!orders.length) {
-            return res.status(404).json({ success: false, message: 'No orders found for this user' });
-        }
+  return res.json({ success: true, orders: [] });
+}
         
         res.json({ success: true, orders });
     } catch (error) {
