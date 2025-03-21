@@ -547,6 +547,7 @@ module.exports = Order;
 app.post('/checkout', fetchUser, async (req, res) => {
   try {
     console.log('Request Body:', req.body); // Log the request body
+
     const {
       customer_name,
       mobile,
@@ -560,20 +561,34 @@ app.post('/checkout', fetchUser, async (req, res) => {
       razorpay_signature
     } = req.body;
 
+    // Validate required fields
+    if (!customer_name || !mobile || !shipping_address || !products || !totalAmount || !paymentMethod) {
+      console.error('❌ Missing required fields');
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
     const user_id = req.user.id;
     const order_id = uuidv4();
 
+    // Verify Razorpay payment for online payments
     if (paymentMethod === 'Online') {
+      if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        console.error('❌ Missing Razorpay payment data');
+        return res.status(400).json({ success: false, message: 'Missing Razorpay payment data' });
+      }
+
       const body = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto.createHmac("sha256", razorpay.key_secret)
         .update(body)
         .digest("hex");
 
       if (expectedSignature !== razorpay_signature) {
+        console.error('❌ Invalid payment signature');
         return res.status(400).json({ success: false, message: "Invalid payment signature" });
       }
     }
 
+    // Create the order
     const newOrder = new Order({
       user_id,
       order_id,
@@ -586,17 +601,20 @@ app.post('/checkout', fetchUser, async (req, res) => {
       paymentMethod,
       orderStatus: 'Pending',
       deliveryManName: '',
-      deliveryManMobile: ''
+      deliveryManMobile: '',
+      paymentStatus: paymentMethod === 'Online' ? 'Paid' : 'Pending', // Update payment status
     });
 
     await newOrder.save();
-    console.log('✅ Order saved successfully');
-    res.status(200).json({ message: 'Order placed successfully!', order_id });
+    console.log('✅ Order saved successfully:', newOrder);
+
+    res.status(200).json({ success: true, message: 'Order placed successfully!', order_id });
   } catch (error) {
     console.error('❌ Error placing order:', error.message);
-    res.status(500).json({ message: 'Error placing order', error: error.message });
+    res.status(500).json({ success: false, message: 'Error placing order', error: error.message });
   }
 });
+
 
 // 🟢 Route: Get logged-in user's orders
 app.get('/myorders', fetchUser, async (req, res) => {
@@ -624,13 +642,21 @@ app.post('/create-order', async (req, res) => {
   try {
     const { amount, currency } = req.body;
 
+    // Validate required fields
+    if (!amount || !currency) {
+      console.error('❌ Missing amount or currency');
+      return res.status(400).json({ success: false, message: 'Missing amount or currency' });
+    }
+
     const options = {
-      amount,
+      amount: amount * 100, // Convert to paise
       currency,
       receipt: `receipt_${Date.now()}`
     };
 
     const order = await razorpay.orders.create(options);
+    console.log('✅ Razorpay order created:', order);
+
     res.json({
       success: true,
       id: order.id,
@@ -638,25 +664,35 @@ app.post('/create-order', async (req, res) => {
       currency: order.currency
     });
   } catch (error) {
-    console.error('Error Creating Razorpay Order:', error);
+    console.error('❌ Error Creating Razorpay Order:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
 
 // 🟢 Route: Verify Razorpay payment
 app.post('/verify-payment', async (req, res) => {
   try {
     const { order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    // Validate required fields
+    if (!order_id || !razorpay_payment_id || !razorpay_signature) {
+      console.error('❌ Missing Razorpay payment data');
+      return res.status(400).json({ success: false, message: 'Missing Razorpay payment data' });
+    }
+
     const body = `${order_id}|${razorpay_payment_id}`;
     const expectedSignature = crypto.createHmac('sha256', razorpay.key_secret).update(body).digest('hex');
 
     if (expectedSignature === razorpay_signature) {
+      console.log('✅ Payment verified successfully');
       res.json({ success: true, message: 'Payment verified successfully' });
     } else {
+      console.error('❌ Invalid payment signature');
       res.status(400).json({ success: false, message: 'Invalid payment signature' });
     }
   } catch (error) {
-    console.error('Payment Verification Error:', error);
+    console.error('❌ Payment Verification Error:', error);
     res.status(500).json({ success: false, message: 'Payment verification failed' });
   }
 });
