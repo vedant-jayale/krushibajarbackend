@@ -498,10 +498,11 @@ const orderSchema = new mongoose.Schema({
   },
   products: [
     {
+      id: { type: Number, required: true },
       name: { type: String, required: true },
       price: { type: Number, required: true },
       quantity: { type: Number, required: true },
-      total: { type: Number, required: true }, // Ensure this field is included
+      total: { type: Number, required: true }, // Total for each product
       image: { type: String },
     },
   ],
@@ -509,21 +510,15 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  paymentMethod: {
+    type: String,
+    enum: ['COD', 'Online'],
+    required: true,
+  },
   orderStatus: {
     type: String,
     enum: ['Pending', 'Delivered', 'In Track or Route'],
     default: 'Pending',
-    required: true,
-  },
-  deliveryManName: {
-    type: String,
-  },
-  deliveryManMobile: {
-    type: String,
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['COD', 'Online'],
     required: true,
   },
   paymentStatus: {
