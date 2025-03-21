@@ -649,7 +649,7 @@ app.post('/create-order', async (req, res) => {
     }
 
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: amount , // Convert to paise
       currency,
       receipt: `receipt_${Date.now()}`
     };
