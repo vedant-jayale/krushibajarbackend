@@ -469,8 +469,6 @@ app.post("/removeproduct", async (req, res) => {
 });
 
 
-// order-schema
-
 const orderSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -503,9 +501,9 @@ const orderSchema = new mongoose.Schema({
       name: { type: String, required: true },
       price: { type: Number, required: true },
       quantity: { type: Number, required: true },
-      total: { type: Number, required: true },
+      total: { type: Number, required: true }, // Ensure this field is included
       image: { type: String },
-    }
+    },
   ],
   totalAmount: {
     type: Number,
@@ -536,17 +534,15 @@ const orderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
-
-const Order = mongoose.model('Order', orderSchema);
-module.exports = Order;
 
 
 
 // COD or Online Checkout
 app.post('/checkout', fetchUser, async (req, res) => {
   try {
+    console.log('Request Body:', req.body); // Log the request body
     const {
       customer_name,
       mobile,
