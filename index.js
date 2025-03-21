@@ -537,7 +537,11 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
+// Create the Order model
+const Order = mongoose.model('Order', orderSchema);
 
+// Export the Order model (if needed)
+module.exports = Order;
 
 // COD or Online Checkout
 app.post('/checkout', fetchUser, async (req, res) => {
