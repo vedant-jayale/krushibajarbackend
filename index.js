@@ -9,6 +9,8 @@ const jwt= require("jsonwebtoken");
 const cors= require("cors");
 const multer= require("multer");
 const path = require("path");   // using this path we can get access to directories in backend development 
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -44,10 +46,11 @@ const allowedOrigins = [
 mongoose.connect("mongodb+srv://vedantjayle2003:ecommerce@cluster0.p6m6ytc.mongodb.net/e-commerce");
 console.log("connected he") 
 
-//old:
 
-
-//for deployment : to connect frontend with backend :
+const razorpay = new Razorpay({
+    key_id:"rzp_live_zKyksfIZKRMWoL",
+    key_secret:"GFyG7DG81mab1DoIEjZCCqWJ",
+});
 
 
 
@@ -725,6 +728,55 @@ app.delete('/delete-order/:id', fetchUser, async (req, res) => {
     res.status(500).json({ message: 'Error deleting order', error: error.message });
   }
 });
+
+
+app.post('/create-order', async (req, res) => {
+  try {
+    const { amount, currency } = req.body;
+    
+    const options = {
+      amount: amount,
+      currency: currency,
+      receipt: `receipt_${Math.random().toString(36).substring(7)}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+    console.log('✅ Razorpay Order Created:', order);
+
+    res.json({
+      success: true,
+      id: order.id, // ✅ Ensure frontend gets the correct `id`
+      amount: order.amount,
+      currency: order.currency,
+    });
+  } catch (error) {
+    console.error('❌ Error Creating Order:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+// Route to verify payment
+app.post("/verify-payment", async (req, res) => {
+  try {
+      const { order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+      const body = order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto.createHmac("sha256", razorpay.key_secret)
+                                      .update(body)
+                                      .digest("hex");
+
+      if (expectedSignature === razorpay_signature) {
+          res.json({ success: true, message: "Payment verified successfully" });
+      } else {
+          res.status(400).json({ success: false, message: "Invalid payment signature" });
+      }
+  } catch (error) {
+      console.error("Payment Verification Error:", error);
+      res.status(500).json({ success: false, message: "Payment verification failed" });
+  }
+});
+
 
 
 const screenshotStorage = multer.diskStorage({
