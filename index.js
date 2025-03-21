@@ -615,7 +615,6 @@ app.post('/checkout', fetchUser, async (req, res) => {
   }
 });
 
-
 // 🟢 Route: Get logged-in user's orders
 app.get('/myorders', fetchUser, async (req, res) => {
   try {
